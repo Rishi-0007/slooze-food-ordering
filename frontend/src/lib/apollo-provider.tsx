@@ -1,6 +1,7 @@
 'use client';
 
-import { ApolloClient, InMemoryCache, createHttpLink, ApolloProvider as BaseApolloProvider } from '@apollo/client';
+import { ApolloClient, InMemoryCache, createHttpLink } from '@apollo/client';
+import { ApolloProvider as BaseApolloProvider } from '@apollo/client/react';
 import { setContext } from '@apollo/client/link/context';
 import { ReactNode } from 'react';
 
