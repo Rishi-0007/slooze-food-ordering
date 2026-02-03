@@ -12,7 +12,9 @@ export class AuthResolver {
   constructor(private authService: AuthService) {}
 
   @Mutation(() => AuthResponse)
-  async login(@Args('loginInput') loginInput: LoginInput): Promise<AuthResponse> {
+  async login(
+    @Args('loginInput') loginInput: LoginInput,
+  ): Promise<AuthResponse> {
     return this.authService.login(loginInput);
   }
 
@@ -25,7 +27,7 @@ export class AuthResolver {
 
   @Query(() => User)
   @UseGuards(GqlAuthGuard)
-  async me(@CurrentUser() user: User): Promise<User> {
+  me(@CurrentUser() user: User): User {
     return user;
   }
 }

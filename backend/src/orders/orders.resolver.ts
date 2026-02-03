@@ -2,7 +2,11 @@ import { Resolver, Query, Mutation, Args, ID } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { Order } from './entities/order.entity';
-import { AddToCartInput, UpdateCartItemInput, CheckoutInput } from './dto/order.input';
+import {
+  AddToCartInput,
+  UpdateCartItemInput,
+  CheckoutInput,
+} from './dto/order.input';
 import { GqlAuthGuard } from '../auth/guards/gql-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { User } from '@prisma/client';

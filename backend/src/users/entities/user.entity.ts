@@ -1,9 +1,4 @@
-import {
-  ObjectType,
-  Field,
-  ID,
-  registerEnumType,
-} from '@nestjs/graphql';
+import { ObjectType, Field, ID, registerEnumType } from '@nestjs/graphql';
 import { Role } from '@prisma/client';
 
 // Register the Role enum from Prisma for GraphQL

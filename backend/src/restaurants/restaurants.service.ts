@@ -50,9 +50,12 @@ export class RestaurantsService {
   }
 
   // Get menu items for a restaurant
-  async getMenuItems(restaurantId: string, user: User & { country?: { id: string } | null }) {
+  async getMenuItems(
+    restaurantId: string,
+    user: User & { country?: { id: string } | null },
+  ) {
     const restaurant = await this.findOne(restaurantId, user);
-    
+
     if (!restaurant) {
       return [];
     }

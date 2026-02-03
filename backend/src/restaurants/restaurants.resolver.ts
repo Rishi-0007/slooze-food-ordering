@@ -12,7 +12,9 @@ export class RestaurantsResolver {
   constructor(private restaurantsService: RestaurantsService) {}
 
   @Query(() => [Restaurant])
-  async restaurants(@CurrentUser() user: User & { country?: { id: string } | null }) {
+  async restaurants(
+    @CurrentUser() user: User & { country?: { id: string } | null },
+  ) {
     return this.restaurantsService.findAll(user);
   }
 

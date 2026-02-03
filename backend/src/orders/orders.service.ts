@@ -6,7 +6,11 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { User, OrderStatus, Role } from '@prisma/client';
-import { AddToCartInput, UpdateCartItemInput, CheckoutInput } from './dto/order.input';
+import {
+  AddToCartInput,
+  UpdateCartItemInput,
+  CheckoutInput,
+} from './dto/order.input';
 
 @Injectable()
 export class OrdersService {
@@ -44,7 +48,10 @@ export class OrdersService {
   }
 
   // Add item to cart
-  async addToCart(input: AddToCartInput, user: User & { countryId?: string | null }) {
+  async addToCart(
+    input: AddToCartInput,
+    user: User & { countryId?: string | null },
+  ) {
     const menuItem = await this.prisma.menuItem.findUnique({
       where: { id: input.menuItemId },
       include: { restaurant: true },
@@ -56,7 +63,9 @@ export class OrdersService {
 
     // Check country-based access for non-admin users
     if (user.countryId && menuItem.restaurant.countryId !== user.countryId) {
-      throw new ForbiddenException('You can only order from restaurants in your country');
+      throw new ForbiddenException(
+        'You can only order from restaurants in your country',
+      );
     }
 
     const cart = await this.getOrCreateCart(user);
@@ -189,7 +198,9 @@ export class OrdersService {
   // Cancel order - Only ADMIN and MANAGER can do this
   async cancelOrder(orderId: string, user: User) {
     if (user.role === Role.MEMBER) {
-      throw new ForbiddenException('You do not have permission to cancel orders');
+      throw new ForbiddenException(
+        'You do not have permission to cancel orders',
+      );
     }
 
     const order = await this.prisma.order.findUnique({
@@ -252,7 +263,10 @@ export class OrdersService {
       where: { orderId },
     });
 
-    const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const total = items.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0,
+    );
 
     await this.prisma.order.update({
       where: { id: orderId },
