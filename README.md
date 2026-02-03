@@ -45,10 +45,11 @@ Managers and Members can only access restaurants and data within their assigned 
 ### Prerequisites
 
 - Node.js 18+
-- PostgreSQL
 - npm or yarn
+- Docker (recommended) or PostgreSQL installed locally
 
 ### Installation
+
 
 1. Clone the repository
 ```bash
@@ -56,41 +57,49 @@ git clone <repository-url>
 cd slooze-food-ordering
 ```
 
-2. Install backend dependencies
+2. Start the database (using Docker)
+```bash
+# Start PostgreSQL container
+docker-compose up -d
+```
+
+3. Set up Backend
 ```bash
 cd backend
 npm install
 ```
 
-3. Set up environment variables
+4. Configure environment
 ```bash
 cp .env.example .env
-# Edit .env with your database credentials
+# Default config in .env.example works with the Docker setup provided.
+# If running PostgreSQL locally without Docker, update DATABASE_URL in .env
 ```
 
-4. Run database migrations
+5. Run database migrations and seed data
 ```bash
 npx prisma migrate dev
 npx prisma db seed
 ```
 
-5. Start the backend
+6. Start the backend server
 ```bash
 npm run start:dev
 ```
 
-6. Install frontend dependencies (new terminal)
+7. Set up Frontend (Open a new terminal)
 ```bash
-cd frontend
+# Navigate to frontend directory from root
+cd slooze-food-ordering/frontend
 npm install
 ```
 
-7. Start the frontend
+8. Start the frontend server
 ```bash
 npm run dev
 ```
 
-8. Open http://localhost:3000 in your browser
+9. Open http://localhost:3000 in your browser
 
 ## 📁 Project Structure
 
@@ -101,6 +110,7 @@ slooze-food-ordering/
 │   └── src/          # Source code
 ├── frontend/         # Next.js application
 │   └── src/          # Source code
+├── docker-compose.yml # Database configuration
 └── README.md
 ```
 
@@ -116,8 +126,9 @@ cd backend && npm run test:e2e
 
 ## 📝 API Documentation
 
-GraphQL Playground is available at `http://localhost:4000/graphql` when running the backend.
+- **[Detailed API Documentation](./API_DOCS.md)**
+- GraphQL Playground is available at `http://localhost:4000/graphql` when running the backend.
 
-## 📄 License
+## Purpose
 
-© Slooze. All Rights Reserved.
+This project is build to submit for the full stack challenge of slooze.
