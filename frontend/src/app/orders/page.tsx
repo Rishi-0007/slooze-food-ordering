@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery, useMutation } from '@apollo/client';
+import { useQuery, useMutation } from '@apollo/client/react';
 import { useAuth } from '@/lib/auth-context';
 import { ORDERS_QUERY, CANCEL_ORDER_MUTATION } from '@/lib/graphql';
 import Header from '@/components/Header';
@@ -22,11 +22,15 @@ interface Order {
   items: OrderItem[];
 }
 
+interface OrdersData {
+  orders: Order[];
+}
+
 export default function OrdersPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
 
-  const { data, loading, error } = useQuery(ORDERS_QUERY, { skip: !user });
+  const { data, loading, error } = useQuery<OrdersData>(ORDERS_QUERY, { skip: !user });
   const [cancelOrder] = useMutation(CANCEL_ORDER_MUTATION, {
     refetchQueries: [{ query: ORDERS_QUERY }],
   });

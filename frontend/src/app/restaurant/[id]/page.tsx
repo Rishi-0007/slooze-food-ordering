@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery, useMutation } from '@apollo/client';
+import { useQuery, useMutation } from '@apollo/client/react';
 import { useAuth } from '@/lib/auth-context';
 import { RESTAURANT_QUERY, ADD_TO_CART_MUTATION, CART_QUERY } from '@/lib/graphql';
 import Header from '@/components/Header';
@@ -14,6 +14,15 @@ interface MenuItem {
   price: number;
 }
 
+interface RestaurantData {
+  restaurant: {
+    id: string;
+    name: string;
+    description: string;
+  } | null;
+  menuItems: MenuItem[];
+}
+
 export default function RestaurantPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
@@ -21,7 +30,7 @@ export default function RestaurantPage() {
   const id = params.id as string;
   const [addedItems, setAddedItems] = useState<Set<string>>(new Set());
 
-  const { data, loading, error } = useQuery(RESTAURANT_QUERY, {
+  const { data, loading, error } = useQuery<RestaurantData>(RESTAURANT_QUERY, {
     variables: { id },
     skip: !user || !id,
   });

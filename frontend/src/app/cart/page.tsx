@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery, useMutation } from '@apollo/client';
+import { useQuery, useMutation } from '@apollo/client/react';
 import { useAuth } from '@/lib/auth-context';
 import { CART_QUERY, UPDATE_CART_ITEM_MUTATION, CHECKOUT_MUTATION, PAYMENT_METHODS_QUERY, ORDERS_QUERY } from '@/lib/graphql';
 import Header from '@/components/Header';
@@ -14,10 +14,20 @@ interface CartItem {
   menuItem: { id: string; name: string };
 }
 
+
+
 interface PaymentMethod {
   id: string;
   type: string;
   details: string;
+}
+
+interface CartData {
+  cart: {
+    id: string;
+    totalPrice: number;
+    items: CartItem[];
+  } | null;
 }
 
 export default function CartPage() {
@@ -25,8 +35,10 @@ export default function CartPage() {
   const router = useRouter();
   const [checkoutError, setCheckoutError] = useState('');
 
-  const { data: cartData, loading: cartLoading } = useQuery(CART_QUERY, { skip: !user });
-  const { data: paymentData } = useQuery(PAYMENT_METHODS_QUERY, { skip: !user });
+  const { data: cartData, loading: cartLoading } = useQuery<CartData>(CART_QUERY, { skip: !user });
+  const { data: paymentData } = useQuery<{ paymentMethods: PaymentMethod[] }>(PAYMENT_METHODS_QUERY, {
+    skip: !user,
+  });
 
   const [updateCartItem] = useMutation(UPDATE_CART_ITEM_MUTATION, {
     refetchQueries: [{ query: CART_QUERY }],
@@ -56,6 +68,7 @@ export default function CartPage() {
     }
 
     try {
+      if (!cart) return;
       await checkout({
         variables: { input: { orderId: cart.id, paymentMethodId } },
       });
@@ -106,7 +119,7 @@ export default function CartPage() {
 
                 <div className="cart-total">
                   <span>Total</span>
-                  <span className="price">${cart.totalPrice.toFixed(2)}</span>
+                  <span className="price">${(cart?.totalPrice ?? 0).toFixed(2)}</span>
                 </div>
 
                 {checkoutError && <div className="error-message">{checkoutError}</div>}

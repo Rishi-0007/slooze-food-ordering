@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useLazyQuery } from '@apollo/client';
+import { useLazyQuery } from '@apollo/client/react';
 import { ME_QUERY } from './graphql';
 
 interface User {
@@ -14,6 +14,10 @@ interface User {
     name: string;
     code: string;
   };
+}
+
+interface MeData {
+  me: User;
 }
 
 interface AuthContextType {
@@ -30,16 +34,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [getMe] = useLazyQuery(ME_QUERY);
+  const [getMe] = useLazyQuery<MeData>(ME_QUERY);
 
   useEffect(() => {
     const storedToken = localStorage.getItem('token');
     if (storedToken) {
-      setToken(storedToken);
+      // setToken(storedToken); // Removed to avoid sync state update
       getMe()
         .then(({ data }) => {
           if (data?.me) {
             setUser(data.me);
+            setToken(storedToken);
           } else {
             localStorage.removeItem('token');
           }
@@ -49,7 +54,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         })
         .finally(() => setLoading(false));
     } else {
-      setLoading(false);
+      setTimeout(() => setLoading(false), 0);
     }
   }, [getMe]);
 

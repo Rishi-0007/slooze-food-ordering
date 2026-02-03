@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery, useMutation } from '@apollo/client';
+import { useQuery, useMutation } from '@apollo/client/react';
 import { useAuth } from '@/lib/auth-context';
 import { PAYMENT_METHODS_QUERY, CREATE_PAYMENT_METHOD_MUTATION, DELETE_PAYMENT_METHOD_MUTATION } from '@/lib/graphql';
 import Header from '@/components/Header';
@@ -14,13 +14,17 @@ interface PaymentMethod {
   isDefault: boolean;
 }
 
+interface PaymentMethodsData {
+  paymentMethods: PaymentMethod[];
+}
+
 export default function PaymentMethodsPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const [newType, setNewType] = useState('CREDIT_CARD');
   const [newDetails, setNewDetails] = useState('');
 
-  const { data, loading, error } = useQuery(PAYMENT_METHODS_QUERY, { skip: !user });
+  const { data, loading, error } = useQuery<PaymentMethodsData>(PAYMENT_METHODS_QUERY, { skip: !user });
   const [createPaymentMethod] = useMutation(CREATE_PAYMENT_METHOD_MUTATION, {
     refetchQueries: [{ query: PAYMENT_METHODS_QUERY }],
   });

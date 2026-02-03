@@ -1,10 +1,29 @@
 'use client';
 
 import { useState } from 'react';
-import { useMutation } from '@apollo/client';
+import { useMutation } from '@apollo/client/react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { LOGIN_MUTATION } from '@/lib/graphql';
+
+interface User {
+  id: string;
+  email: string;
+  name: string;
+  role: 'ADMIN' | 'MANAGER' | 'MEMBER';
+  country?: {
+    id: string;
+    name: string;
+    code: string;
+  };
+}
+
+interface LoginData {
+  login: {
+    accessToken: string;
+    user: User;
+  };
+}
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -12,7 +31,7 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const { login } = useAuth();
   const router = useRouter();
-  const [loginMutation, { loading }] = useMutation(LOGIN_MUTATION);
+  const [loginMutation, { loading }] = useMutation<LoginData>(LOGIN_MUTATION);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
