@@ -1,0 +1,158 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+input AddToCartInput {
+  menuItemId: ID!
+  quantity: Int! = 1
+}
+
+type AuthResponse {
+  accessToken: String!
+  user: User!
+}
+
+input CheckoutInput {
+  orderId: ID!
+  paymentMethodId: ID!
+}
+
+type Country {
+  code: String!
+  id: ID!
+  name: String!
+}
+
+input CreatePaymentMethodInput {
+  details: String!
+  isDefault: Boolean! = false
+  type: String!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+input LoginInput {
+  email: String!
+  password: String!
+}
+
+type MenuItem {
+  createdAt: DateTime!
+  description: String
+  id: ID!
+  imageUrl: String
+  name: String!
+  price: Float!
+  restaurant: Restaurant
+  restaurantId: String!
+  updatedAt: DateTime!
+}
+
+type Mutation {
+  addToCart(input: AddToCartInput!): Order!
+  cancelOrder(orderId: ID!): Order!
+  checkout(input: CheckoutInput!): Order!
+  createPaymentMethod(input: CreatePaymentMethodInput!): PaymentMethod!
+  deletePaymentMethod(id: ID!): PaymentMethod!
+  login(loginInput: LoginInput!): AuthResponse!
+  register(registerInput: RegisterInput!): AuthResponse!
+  updateCartItem(input: UpdateCartItemInput!): Order!
+  updatePaymentMethod(input: UpdatePaymentMethodInput!): PaymentMethod!
+}
+
+type Order {
+  createdAt: DateTime!
+  id: ID!
+  items: [OrderItem!]!
+  status: OrderStatus!
+  totalPrice: Float!
+  updatedAt: DateTime!
+  userId: String!
+}
+
+type OrderItem {
+  createdAt: DateTime!
+  id: ID!
+  menuItem: MenuItem
+  menuItemId: String!
+  price: Float!
+  quantity: Float!
+}
+
+"""The status of an order"""
+enum OrderStatus {
+  CANCELLED
+  CART
+  CONFIRMED
+  PENDING
+}
+
+type PaymentMethod {
+  createdAt: DateTime!
+  details: String!
+  id: ID!
+  isDefault: Boolean!
+  type: String!
+  updatedAt: DateTime!
+  userId: String!
+}
+
+type Query {
+  cart: Order!
+  me: User!
+  menuItems(restaurantId: ID!): [MenuItem!]!
+  order(id: ID!): Order
+  orders: [Order!]!
+  paymentMethod(id: ID!): PaymentMethod
+  paymentMethods: [PaymentMethod!]!
+  restaurant(id: ID!): Restaurant
+  restaurants: [Restaurant!]!
+}
+
+input RegisterInput {
+  email: String!
+  name: String!
+  password: String!
+}
+
+type Restaurant {
+  countryId: String!
+  createdAt: DateTime!
+  description: String
+  id: ID!
+  imageUrl: String
+  name: String!
+  updatedAt: DateTime!
+}
+
+"""User role in the system"""
+enum Role {
+  ADMIN
+  MANAGER
+  MEMBER
+}
+
+input UpdateCartItemInput {
+  orderItemId: ID!
+  quantity: Int!
+}
+
+input UpdatePaymentMethodInput {
+  details: String
+  id: ID!
+  isDefault: Boolean
+  type: String
+}
+
+type User {
+  country: Country
+  createdAt: DateTime!
+  email: String!
+  id: ID!
+  name: String!
+  role: Role!
+  updatedAt: DateTime!
+}

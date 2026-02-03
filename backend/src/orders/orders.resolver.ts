@@ -5,7 +5,7 @@ import { Order } from './entities/order.entity';
 import { AddToCartInput, UpdateCartItemInput, CheckoutInput } from './dto/order.input';
 import { GqlAuthGuard } from '../auth/guards/gql-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
-import { User } from '@prisma/client';
+import type { User } from '@prisma/client';
 
 @Resolver(() => Order)
 @UseGuards(GqlAuthGuard)

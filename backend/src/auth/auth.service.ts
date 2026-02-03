@@ -44,7 +44,7 @@ export class AuthService {
 
     return {
       accessToken: this.jwtService.sign(payload),
-      user,
+      user: { ...user, country: user.country ?? undefined },
     };
   }
 
@@ -77,7 +77,7 @@ export class AuthService {
 
     return {
       accessToken: this.jwtService.sign(payload),
-      user,
+      user: { ...user, country: user.country ?? undefined },
     };
   }
 
