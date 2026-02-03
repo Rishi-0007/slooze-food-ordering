@@ -116,7 +116,7 @@ cd backend && npm run test:e2e
 
 ## 📝 API Documentation
 
-GraphQL Playground is available at `http://localhost:3000/graphql` when running the backend.
+GraphQL Playground is available at `http://localhost:4000/graphql` when running the backend.
 
 ## 📄 License
 
