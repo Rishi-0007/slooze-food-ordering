@@ -1,0 +1,118 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enum for user roles
+enum Role {
+  ADMIN
+  MANAGER
+  MEMBER
+}
+
+// Enum for order status
+enum OrderStatus {
+  CART
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
+
+// Country model for relational access control
+model Country {
+  id          String       @id @default(cuid())
+  name        String       @unique
+  code        String       @unique // "IN" or "US"
+  users       User[]
+  restaurants Restaurant[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+// User model with role and country association
+model User {
+  id             String          @id @default(cuid())
+  email          String          @unique
+  password       String
+  name           String
+  role           Role            @default(MEMBER)
+  countryId      String?         // Null for ADMIN (org-wide access)
+  country        Country?        @relation(fields: [countryId], references: [id])
+  orders         Order[]
+  paymentMethods PaymentMethod[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+}
+
+// Restaurant model with country association
+model Restaurant {
+  id          String     @id @default(cuid())
+  name        String
+  description String?
+  imageUrl    String?
+  countryId   String
+  country     Country    @relation(fields: [countryId], references: [id])
+  menuItems   MenuItem[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+// Menu item model
+model MenuItem {
+  id           String      @id @default(cuid())
+  name         String
+  description  String?
+  price        Float
+  imageUrl     String?
+  restaurantId String
+  restaurant   Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  orderItems   OrderItem[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+}
+
+// Order model
+model Order {
+  id         String      @id @default(cuid())
+  status     OrderStatus @default(CART)
+  totalPrice Float       @default(0)
+  userId     String
+  user       User        @relation(fields: [userId], references: [id])
+  items      OrderItem[]
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+}
+
+// Order item (join table between Order and MenuItem)
+model OrderItem {
+  id         String   @id @default(cuid())
+  quantity   Int      @default(1)
+  price      Float    // Price at time of order
+  orderId    String
+  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItemId String
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([orderId, menuItemId])
+}
+
+// Payment method model
+model PaymentMethod {
+  id        String   @id @default(cuid())
+  type      String   // "CREDIT_CARD", "DEBIT_CARD", "UPI", etc.
+  details   String   // JSON string with masked card details or UPI handle
+  isDefault Boolean  @default(false)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
