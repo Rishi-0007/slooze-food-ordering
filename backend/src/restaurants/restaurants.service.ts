@@ -11,7 +11,7 @@ export class RestaurantsService {
     const where: { countryId?: string } = {};
 
     // If user has a country (non-admin), filter by their country
-    if (user.countryId) {
+    if (user.role !== 'ADMIN' && user.countryId) {
       where.countryId = user.countryId;
     }
 
@@ -42,7 +42,11 @@ export class RestaurantsService {
     }
 
     // For non-admin users, check if restaurant belongs to their country
-    if (user.countryId && restaurant.countryId !== user.countryId) {
+    if (
+      user.role !== 'ADMIN' &&
+      user.countryId &&
+      restaurant.countryId !== user.countryId
+    ) {
       return null; // User cannot access restaurants from other countries
     }
 
