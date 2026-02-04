@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation } from '@apollo/client/react';
 import { useAuth } from '@/lib/auth-context';
-import { CART_QUERY, UPDATE_CART_ITEM_MUTATION, CHECKOUT_MUTATION, PAYMENT_METHODS_QUERY, ORDERS_QUERY } from '@/lib/graphql';
+import { CART_QUERY, UPDATE_CART_ITEM_MUTATION, PLACE_ORDER_MUTATION, PAYMENT_METHODS_QUERY, ORDERS_QUERY } from '@/lib/graphql';
 import Header from '@/components/Header';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -11,7 +11,15 @@ interface CartItem {
   id: string;
   quantity: number;
   price: number;
-  menuItem: { id: string; name: string };
+  menuItem: {
+    id: string;
+    name: string;
+    restaurant: {
+      country: {
+        currency: string;
+      };
+    };
+  };
 }
 
 
@@ -44,7 +52,7 @@ export default function CartPage() {
     refetchQueries: [{ query: CART_QUERY }],
   });
 
-  const [checkout, { loading: checkoutLoading }] = useMutation(CHECKOUT_MUTATION, {
+  const [placeOrder, { loading: placeOrderLoading }] = useMutation(PLACE_ORDER_MUTATION, {
     refetchQueries: [{ query: CART_QUERY }, { query: ORDERS_QUERY }],
   });
 
@@ -58,23 +66,32 @@ export default function CartPage() {
     await updateCartItem({ variables: { input: { orderItemId, quantity } } });
   };
 
-  const handleCheckout = async () => {
-    setCheckoutError('');
-    const paymentMethodId = paymentData?.paymentMethods?.[0]?.id;
-    
-    if (!paymentMethodId) {
-      setCheckoutError('No payment method available. Admin must add one.');
-      return;
-    }
+  const getCartTotals = (items: CartItem[]) => {
+    const totals: Record<string, number> = {};
+    items.forEach((item) => {
+      const currency = item.menuItem.restaurant.country.currency;
+      totals[currency] = (totals[currency] || 0) + item.price * item.quantity;
+    });
+    return totals;
+  };
 
+  const formatCurrency = (amount: number, currency: string) => {
+    return new Intl.NumberFormat(currency === 'INR' ? 'en-IN' : 'en-US', {
+      style: 'currency',
+      currency,
+    }).format(amount);
+  };
+
+  const handlePlaceOrder = async () => {
+    setCheckoutError('');
     try {
       if (!cart) return;
-      await checkout({
-        variables: { input: { orderId: cart.id, paymentMethodId } },
+      await placeOrder({
+        variables: { orderId: cart.id },
       });
       router.push('/orders');
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'Checkout failed';
+      const errorMessage = err instanceof Error ? err.message : 'Failed to place order';
       setCheckoutError(errorMessage);
     }
   };
@@ -107,7 +124,15 @@ export default function CartPage() {
                   <div key={item.id} className="cart-item">
                     <div>
                       <strong>{item.menuItem.name}</strong>
-                      <p className="card-text">${(item.price * item.quantity).toFixed(2)}</p>
+                      <p className="card-text">
+                        {new Intl.NumberFormat(
+                          item.menuItem.restaurant?.country?.currency === 'INR' ? 'en-IN' : 'en-US',
+                          {
+                            style: 'currency',
+                            currency: item.menuItem.restaurant?.country?.currency || 'USD',
+                          }
+                        ).format(item.price * item.quantity)}
+                      </p>
                     </div>
                     <div className="quantity-controls">
                       <button onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}>−</button>
@@ -119,25 +144,26 @@ export default function CartPage() {
 
                 <div className="cart-total">
                   <span>Total</span>
-                  <span className="price">${(cart?.totalPrice ?? 0).toFixed(2)}</span>
+                  <span className="price">
+                    {Object.entries(getCartTotals(items)).map(([currency, amount], index, arr) => (
+                        <span key={currency}>
+                          {formatCurrency(amount, currency)}
+                          {index < arr.length - 1 ? ' + ' : ''}
+                        </span>
+                      ))}
+                  </span>
                 </div>
 
                 {checkoutError && <div className="error-message">{checkoutError}</div>}
 
-                {canCheckout ? (
-                  <button
-                    className="btn btn-primary"
-                    style={{ width: '100%' }}
-                    onClick={handleCheckout}
-                    disabled={checkoutLoading || items.length === 0}
-                  >
-                    {checkoutLoading ? 'Processing...' : 'Checkout & Pay'}
-                  </button>
-                ) : (
-                  <div className="error-message" style={{ textAlign: 'center' }}>
-                    Only Managers and Admins can checkout orders.
-                  </div>
-                )}
+                <button
+                  className="btn btn-primary"
+                  style={{ width: '100%' }}
+                  onClick={handlePlaceOrder}
+                  disabled={placeOrderLoading || items.length === 0}
+                >
+                  {placeOrderLoading ? 'Processing...' : 'Place Order'}
+                </button>
               </>
             )}
           </div>
