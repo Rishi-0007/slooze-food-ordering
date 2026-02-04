@@ -25,7 +25,15 @@ export class OrdersService {
       },
       include: {
         items: {
-          include: { menuItem: true },
+          include: {
+            menuItem: {
+              include: {
+                restaurant: {
+                  include: { country: true },
+                },
+              },
+            },
+          },
         },
       },
     });
@@ -38,7 +46,15 @@ export class OrdersService {
         },
         include: {
           items: {
-            include: { menuItem: true },
+            include: {
+              menuItem: {
+                include: {
+                  restaurant: {
+                    include: { country: true },
+                  },
+                },
+              },
+            },
           },
         },
       });
@@ -105,7 +121,15 @@ export class OrdersService {
       where: { id: cart.id },
       include: {
         items: {
-          include: { menuItem: true },
+          include: {
+            menuItem: {
+              include: {
+                restaurant: {
+                  include: { country: true },
+                },
+              },
+            },
+          },
         },
       },
     });
@@ -145,7 +169,15 @@ export class OrdersService {
       where: { id: orderItem.orderId },
       include: {
         items: {
-          include: { menuItem: true },
+          include: {
+            menuItem: {
+              include: {
+                restaurant: {
+                  include: { country: true },
+                },
+              },
+            },
+          },
         },
       },
     });
@@ -166,21 +198,29 @@ export class OrdersService {
       throw new NotFoundException('Order not found');
     }
 
-    if (order.status !== OrderStatus.CART) {
-      throw new BadRequestException('Order is not in cart status');
+    if (order.status !== OrderStatus.PENDING) {
+      throw new BadRequestException('Order must be placed (PENDING) before checkout');
     }
 
     if (order.items.length === 0) {
       throw new BadRequestException('Cart is empty');
     }
 
-    // Verify payment method exists
+    // Verify payment method exists and is accessible (Own or Admin's org-wide)
     const paymentMethod = await this.prisma.paymentMethod.findUnique({
       where: { id: input.paymentMethodId },
+      include: { user: true },
     });
 
-    if (!paymentMethod || paymentMethod.userId !== user.id) {
+    if (!paymentMethod) {
       throw new NotFoundException('Payment method not found');
+    }
+
+    const isOwner = paymentMethod.userId === user.id;
+    const isOrgWide = paymentMethod.user.role === Role.ADMIN;
+
+    if (!isOwner && !isOrgWide) {
+      throw new ForbiddenException('Cannot use this payment method');
     }
 
     // Update order status to CONFIRMED
@@ -189,9 +229,44 @@ export class OrdersService {
       data: { status: OrderStatus.CONFIRMED },
       include: {
         items: {
-          include: { menuItem: true },
+          include: {
+            menuItem: {
+              include: {
+                restaurant: {
+                  include: { country: true },
+                },
+              },
+            },
+          },
         },
       },
+    });
+
+  }
+
+  // Place Order (Cart -> Pending) - Accessible by Members
+  async placeOrder(orderId: string, user: User) {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      include: { items: true },
+    });
+
+    if (!order || order.userId !== user.id) {
+      throw new NotFoundException('Order not found');
+    }
+
+    if (order.status !== OrderStatus.CART) {
+      throw new BadRequestException('Order is not in cart status');
+    }
+
+    if (order.items.length === 0) {
+      throw new BadRequestException('Cart is empty');
+    }
+
+    return this.prisma.order.update({
+      where: { id: orderId },
+      data: { status: OrderStatus.PENDING },
+      include: { items: true },
     });
   }
 
@@ -220,20 +295,49 @@ export class OrdersService {
       data: { status: OrderStatus.CANCELLED },
       include: {
         items: {
-          include: { menuItem: true },
+          include: {
+            menuItem: {
+              include: {
+                restaurant: {
+                  include: { country: true },
+                },
+              },
+            },
+          },
         },
       },
     });
   }
 
-  // Get user's orders
+  // Get user's orders (with Role-Based Logic)
   async getUserOrders(user: User) {
+    const where: any = {};
+
+    if (user.role === Role.ADMIN) {
+      // Admin sees all orders
+    } else if (user.role === Role.MANAGER) {
+      // Manager sees orders from users in their country
+      where.user = { countryId: user.countryId };
+    } else {
+      // Member sees only their own orders
+      where.userId = user.id;
+    }
+
     return this.prisma.order.findMany({
-      where: { userId: user.id },
+      where,
       include: {
         items: {
-          include: { menuItem: true },
+          include: {
+            menuItem: {
+              include: {
+                restaurant: {
+                  include: { country: true },
+                },
+              },
+            },
+          },
         },
+        user: true, // Include user details for Managers/Admins to identifying the orderer
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -244,14 +348,34 @@ export class OrdersService {
     const order = await this.prisma.order.findUnique({
       where: { id: orderId },
       include: {
+        user: true, // Needed for country check
         items: {
-          include: { menuItem: true },
+          include: {
+            menuItem: {
+              include: {
+                restaurant: {
+                  include: { country: true },
+                },
+              },
+            },
+          },
         },
       },
     });
 
-    if (!order || order.userId !== user.id) {
+    if (!order) {
       throw new NotFoundException('Order not found');
+    }
+
+    // RBAC Check
+    if (user.role === Role.MEMBER) {
+      if (order.userId !== user.id) {
+        throw new NotFoundException('Order not found');
+      }
+    } else if (user.role === Role.MANAGER) {
+      if (order.user.countryId !== user.countryId) {
+        throw new ForbiddenException('Cannot access orders outside your country');
+      }
     }
 
     return order;
