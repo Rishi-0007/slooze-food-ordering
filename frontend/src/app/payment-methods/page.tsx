@@ -67,8 +67,8 @@ export default function PaymentMethodsPage() {
       <Header />
       <main className="container">
         <div className="page-header">
-          <h1 className="page-title">Payment Methods</h1>
-          <p className="page-subtitle">Admin only - Manage organization payment methods</p>
+          <h1 className="page-title">Organization Payment Methods</h1>
+          <p className="page-subtitle">Admin Workspace - Define global payment options for checkout</p>
         </div>
 
         {loading && <div className="loading">Loading...</div>}
@@ -92,11 +92,11 @@ export default function PaymentMethodsPage() {
                 type="text"
                 className="form-input"
                 style={{ flex: 1, minWidth: '200px' }}
-                placeholder="**** **** **** 4242 or UPI handle"
+                placeholder="details..."
                 value={newDetails}
                 onChange={(e) => setNewDetails(e.target.value)}
               />
-              <button type="submit" className="btn btn-primary">Add</button>
+              <button type="submit" className="btn btn-primary">Add Global Method</button>
             </form>
           </div>
         </div>

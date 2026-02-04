@@ -46,10 +46,12 @@ export class PaymentMethodsService {
   async create(input: CreatePaymentMethodInput, user: User) {
     this.checkAdminAccess(user);
 
+    const targetUserId = input.userId || user.id;
+
     // If this is the first or marked as default, unset other defaults
     if (input.isDefault) {
       await this.prisma.paymentMethod.updateMany({
-        where: { userId: user.id },
+        where: { userId: targetUserId },
         data: { isDefault: false },
       });
     }
@@ -59,7 +61,7 @@ export class PaymentMethodsService {
         type: input.type,
         details: input.details,
         isDefault: input.isDefault ?? false,
-        userId: user.id,
+        userId: targetUserId,
       },
     });
   }

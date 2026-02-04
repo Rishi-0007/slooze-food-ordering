@@ -59,6 +59,14 @@ export class OrdersResolver {
   }
 
   @Mutation(() => Order)
+  async placeOrder(
+    @Args('orderId', { type: () => ID }) orderId: string,
+    @CurrentUser() user: User,
+  ) {
+    return this.ordersService.placeOrder(orderId, user);
+  }
+
+  @Mutation(() => Order)
   async cancelOrder(
     @Args('orderId', { type: () => ID }) orderId: string,
     @CurrentUser() user: User,

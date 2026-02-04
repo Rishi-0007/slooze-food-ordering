@@ -15,6 +15,10 @@ export class CreatePaymentMethodInput {
   @IsBoolean()
   @IsOptional()
   isDefault?: boolean;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  userId?: string;
 }
 
 @InputType()
