@@ -19,6 +19,9 @@ interface RestaurantData {
     id: string;
     name: string;
     description: string;
+    country: {
+      currency: string;
+    };
   } | null;
   menuItems: MenuItem[];
 }
@@ -92,7 +95,10 @@ export default function RestaurantPage() {
                       <h3 className="card-title">{item.name}</h3>
                       <p className="card-text">{item.description}</p>
                       <p className="price" style={{ marginTop: '0.5rem' }}>
-                        {typeof item.price === 'number' && item.price > 100 ? '₹' : '$'}{item.price.toFixed(2)}
+                        {new Intl.NumberFormat(restaurant.country.currency === 'INR' ? 'en-IN' : 'en-US', {
+                          style: 'currency',
+                          currency: restaurant.country.currency,
+                        }).format(item.price)}
                       </p>
                     </div>
                     <button
