@@ -14,6 +14,16 @@ const prisma = new PrismaClient({ adapter });
 
 async function main() {
   console.log('🌱 Seeding database...');
+  // Clean up existing data in reverse dependency order
+  console.log('🧹 Cleaning database...');
+  await prisma.orderItem.deleteMany();
+  await prisma.order.deleteMany();
+  await prisma.menuItem.deleteMany();
+  await prisma.paymentMethod.deleteMany();
+  await prisma.restaurant.deleteMany();
+  await prisma.user.deleteMany();
+  await prisma.country.deleteMany();
+  console.log('✨ Database cleaned');
 
   // Create countries
   const india = await prisma.country.upsert({
