@@ -14,6 +14,7 @@ export const LOGIN_MUTATION = gql`
           id
           name
           code
+          currency
         }
       }
     }
@@ -31,6 +32,7 @@ export const ME_QUERY = gql`
         id
         name
         code
+        currency
       }
     }
   }
@@ -56,6 +58,10 @@ export const RESTAURANT_QUERY = gql`
       name
       description
       imageUrl
+      countryId
+      country {
+        currency
+      }
     }
     menuItems(restaurantId: $id) {
       id
@@ -63,6 +69,11 @@ export const RESTAURANT_QUERY = gql`
       description
       price
       imageUrl
+      restaurant {
+        country {
+          currency
+        }
+      }
     }
   }
 `;
@@ -81,6 +92,11 @@ export const CART_QUERY = gql`
         menuItem {
           id
           name
+          restaurant {
+            country {
+              currency
+            }
+          }
         }
       }
     }
@@ -98,6 +114,11 @@ export const ADD_TO_CART_MUTATION = gql`
         menuItem {
           id
           name
+          restaurant {
+            country {
+              currency
+            }
+          }
         }
       }
     }
@@ -115,6 +136,11 @@ export const UPDATE_CART_ITEM_MUTATION = gql`
         menuItem {
           id
           name
+          restaurant {
+            country {
+              currency
+            }
+          }
         }
       }
     }
@@ -122,11 +148,21 @@ export const UPDATE_CART_ITEM_MUTATION = gql`
 `;
 
 export const CHECKOUT_MUTATION = gql`
+
   mutation Checkout($input: CheckoutInput!) {
     checkout(input: $input) {
       id
       status
       totalPrice
+    }
+  }
+`;
+
+export const PLACE_ORDER_MUTATION = gql`
+  mutation PlaceOrder($orderId: ID!) {
+    placeOrder(orderId: $orderId) {
+      id
+      status
     }
   }
 `;
@@ -154,7 +190,17 @@ export const ORDERS_QUERY = gql`
         menuItem {
           id
           name
+          restaurant {
+            country {
+              currency
+            }
+          }
         }
+      }
+      user {
+        id
+        name
+        email
       }
     }
   }

@@ -19,6 +19,7 @@ input CheckoutInput {
 
 type Country {
   code: String!
+  currency: String!
   id: ID!
   name: String!
 }
@@ -27,6 +28,7 @@ input CreatePaymentMethodInput {
   details: String!
   isDefault: Boolean! = false
   type: String!
+  userId: String
 }
 
 """
@@ -58,6 +60,7 @@ type Mutation {
   createPaymentMethod(input: CreatePaymentMethodInput!): PaymentMethod!
   deletePaymentMethod(id: ID!): PaymentMethod!
   login(loginInput: LoginInput!): AuthResponse!
+  placeOrder(orderId: ID!): Order!
   register(registerInput: RegisterInput!): AuthResponse!
   updateCartItem(input: UpdateCartItemInput!): Order!
   updatePaymentMethod(input: UpdatePaymentMethodInput!): PaymentMethod!
@@ -70,6 +73,7 @@ type Order {
   status: OrderStatus!
   totalPrice: Float!
   updatedAt: DateTime!
+  user: User
   userId: String!
 }
 
@@ -119,6 +123,7 @@ input RegisterInput {
 }
 
 type Restaurant {
+  country: Country!
   countryId: String!
   createdAt: DateTime!
   description: String

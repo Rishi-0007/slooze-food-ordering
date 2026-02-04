@@ -17,6 +17,9 @@ export class Country {
 
   @Field()
   code: string;
+
+  @Field()
+  currency: string;
 }
 
 @ObjectType()

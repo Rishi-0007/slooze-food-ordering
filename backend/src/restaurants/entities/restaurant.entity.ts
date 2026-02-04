@@ -1,4 +1,5 @@
 import { ObjectType, Field, ID, Float } from '@nestjs/graphql';
+import { Country } from '../../users/entities/user.entity';
 
 @ObjectType()
 export class Restaurant {
@@ -22,6 +23,9 @@ export class Restaurant {
 
   @Field()
   updatedAt: Date;
+
+  @Field(() => Country)
+  country: Country;
 }
 
 @ObjectType()

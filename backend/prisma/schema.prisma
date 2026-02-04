@@ -1,8 +1,6 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
@@ -29,6 +27,7 @@ model Country {
   id          String       @id @default(cuid())
   name        String       @unique
   code        String       @unique // "IN" or "US"
+  currency    String       @default("USD") // "INR" or "USD" - Added default to avoid migration issues with existing data, though we will seed correct values.
   users       User[]
   restaurants Restaurant[]
   createdAt   DateTime     @default(now())
@@ -42,7 +41,7 @@ model User {
   password       String
   name           String
   role           Role            @default(MEMBER)
-  countryId      String?         // Null for ADMIN (org-wide access)
+  countryId      String? // Null for ADMIN (org-wide access)
   country        Country?        @relation(fields: [countryId], references: [id])
   orders         Order[]
   paymentMethods PaymentMethod[]
@@ -93,7 +92,7 @@ model Order {
 model OrderItem {
   id         String   @id @default(cuid())
   quantity   Int      @default(1)
-  price      Float    // Price at time of order
+  price      Float // Price at time of order
   orderId    String
   order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   menuItemId String
@@ -107,8 +106,8 @@ model OrderItem {
 // Payment method model
 model PaymentMethod {
   id        String   @id @default(cuid())
-  type      String   // "CREDIT_CARD", "DEBIT_CARD", "UPI", etc.
-  details   String   // JSON string with masked card details or UPI handle
+  type      String // "CREDIT_CARD", "DEBIT_CARD", "UPI", etc.
+  details   String // JSON string with masked card details or UPI handle
   isDefault Boolean  @default(false)
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)

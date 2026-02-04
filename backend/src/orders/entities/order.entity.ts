@@ -7,6 +7,7 @@ import {
 } from '@nestjs/graphql';
 import { OrderStatus } from '@prisma/client';
 import { MenuItem } from '../../restaurants/entities/restaurant.entity';
+import { User } from '../../users/entities/user.entity';
 
 // Register OrderStatus enum for GraphQL
 registerEnumType(OrderStatus, {
@@ -48,6 +49,9 @@ export class Order {
 
   @Field()
   userId: string;
+
+  @Field(() => User, { nullable: true })
+  user?: User;
 
   @Field(() => [OrderItem])
   items: OrderItem[];
